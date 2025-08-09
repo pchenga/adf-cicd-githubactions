@@ -62,30 +62,4 @@ jobs:
           dataFactoryName: test-github-adf
           armTemplateFile: ARMTemplateForFactory.json
           armTemplateParametersFile: ARMTemplateParametersForFactory.json
-          additionalParameters: factoryName=test-github-adf
-
-  deploy-prod:
-    needs: deploy-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download ARM Template
-        uses: actions/download-artifact@v4
-        with:
-          name: ExportedArmTemplate
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          enable-AzPSSession: true
-
-      - name: Deploy to Prod ADF
-        uses: Azure/data-factory-deploy-action@v1.2.0
-        with:
-          resourceGroupName: prod-github-rg
-          dataFactoryName: prod-github-adf
-          armTemplateFile: ARMTemplateForFactory.json
-          armTemplateParametersFile: ARMTemplateParametersForFactory.json
           additionalParameters: factoryName=test-github-adf,ls_dev_adlsgen2_properties_typeProperties_url=https://teststorageacc0908.dfs.core.windows.net,ls_dev_kv_properties_typeProperties_baseUrl=https://test-kv-github.vault.azure.net
