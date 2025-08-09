@@ -1,5 +1,3 @@
-name: ADF Multi-Stage Deployment
-
 on:
   push:
     branches:
@@ -15,51 +13,58 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      # Installs Node and the npm packages saved in your package.json file in the build
+      - name: Setup Node.js environment
         uses: actions/setup-node@v3.4.1
         with:
           node-version: 18.x
-
-      - name: Install ADF Utilities
+          
+      - name: install ADF Utilities package
         run: npm install
-        working-directory: ${{ github.workspace }}/build
-
-      - name: Validate ADF code
+        working-directory: ${{ github.workspace }}/build  # (1) provide the folder location of the package.json file
+          
+      # Validates all of the Data Factory resources in the repository.
+      - name: Validate
         run: npm run build validate ${{ github.workspace }}/ /subscriptions/7e45b3cd-5cb2-4fd8-b985-8f81c27e2507/resourceGroups/dev-github-rg/providers/Microsoft.DataFactory/factories/dev-github-adf
         working-directory: ${{ github.workspace }}/build
 
-      - name: Export ARM Template
-        run: npm run build export ${{ github.workspace }}/ /subscriptions/7e45b3cd-5cb2-4fd8-b985-8f81c27e2507/resourceGroups/dev-github-rg/providers/Microsoft.DataFactory/factories/dev-github-adf ExportedArmTemplate
+      - name: Validate and Generate ARM template
+        run: npm run build export ${{ github.workspace }}/ /subscriptions/7e45b3cd-5cb2-4fd8-b985-8f81c27e2507/resourceGroups/dev-github-rg/providers/Microsoft.DataFactory/factories/dev-github-adf "ExportedArmTemplate"
         working-directory: ${{ github.workspace }}/build
 
-      - name: Upload Exported ARM Template
+      # Upload artifact to be used in release job
+      - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ExportedArmTemplate
           path: ${{ github.workspace }}/build/ExportedArmTemplate
 
-  deploy-test:
+  release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download ARM Template
+      # Download artifact from build job
+      - name: Download a Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: ExportedArmTemplate
 
-      - name: Azure Login
+      - name: Login via Az module
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          enable-AzPSSession: true
+          enable-AzPSSession: true 
 
-      - name: Deploy to Test ADF
+      - name: data-factory-deploy
         uses: Azure/data-factory-deploy-action@v1.2.0
         with:
           resourceGroupName: test-github-rg
           dataFactoryName: test-github-adf
           armTemplateFile: ARMTemplateForFactory.json
           armTemplateParametersFile: ARMTemplateParametersForFactory.json
-          additionalParameters: factoryName=test-github-adf,ls_dev_adlsgen2_properties_typeProperties_url=https://teststorageacc0908.dfs.core.windows.net,ls_dev_kv_properties_typeProperties_baseUrl=https://test-kv-github.vault.azure.net
+          additionalParameters: >
+            factoryName=test-github-adf
+            ls_dev_adlsgen2_properties_typeProperties_url=https://teststorageacc0908.dfs.core.windows.net
+            ls_dev_kv_properties_typeProperties_baseUrl=https://test-kv-github.vault.azure.net
