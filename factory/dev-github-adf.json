@@ -1,0 +1,9 @@
+{
+	"name": "dev-github-adf",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "e296b3d0-b12e-4002-a099-68e2a4801831",
+		"tenantId": "46cc4e71-0101-4ec7-ac44-7a058574f0d5"
+	}
+}
