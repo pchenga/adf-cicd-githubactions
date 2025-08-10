@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "factoryName": {
+      "value": "test-github-adf"
+    },
+    "ls_dev_adlsgen2_properties_typeProperties_url": {
+      "value": "https://teststorageacc0908.dfs.core.windows.net"
+    },
+    "ls_dev_kv_properties_typeProperties_baseUrl": {
+      "value": "https://test-kv-github.vault.azure.net"
+    }
+  }
+}
