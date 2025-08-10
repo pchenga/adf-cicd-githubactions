@@ -39,7 +39,7 @@ jobs:
           name: ExportedArmTemplate
           path: ${{ github.workspace }}/build/ExportedArmTemplate
 
-  release:
+  release_test:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -68,3 +68,33 @@ jobs:
             factoryName=test-github-adf
             ls_dev_adlsgen2_properties_typeProperties_url=https://teststorageacc0908.dfs.core.windows.net
             ls_dev_kv_properties_typeProperties_baseUrl=https://test-kv-github.vault.azure.net
+  release_prod:
+    needs: release_test
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      # Download artifact from build job
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ExportedArmTemplate
+
+      - name: Login via Az module
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.PROD_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.PROD_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.PROD_AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true 
+
+      - name: data-factory-deploy
+        uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: prod-github-rg
+          dataFactoryName: prod-github-adf
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ARMTemplateParametersForFactory.json
+          additionalParameters: >
+            factoryName=prod-github-adf
+            ls_dev_adlsgen2_properties_typeProperties_url=https://prodstorageacc0908.dfs.core.windows.net
+            ls_dev_kv_properties_typeProperties_baseUrl=https://prod-kv-github.vault.azure.net
