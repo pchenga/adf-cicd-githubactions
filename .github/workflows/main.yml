@@ -65,10 +65,8 @@ jobs:
           dataFactoryName: test-github-adf
           armTemplateFile: ARMTemplateForFactory.json
           armTemplateParametersFile: ARMTemplateParametersForFactory.json
-          additionalParameters: >
-            factoryName=test-github-adf
-            ls_dev_adlsgen2_properties_typeProperties_url=https://teststorageacc0908.dfs.core.windows.net
-            ls_dev_kv_properties_typeProperties_baseUrl=https://test-kv-github.vault.azure.net
+          additionalParametersFile : infra/parameters/test-parameters.json
+      
   release_prod:
     needs: release_test
     runs-on: ubuntu-latest
@@ -95,7 +93,4 @@ jobs:
           dataFactoryName: prod-github-adf
           armTemplateFile: ARMTemplateForFactory.json
           armTemplateParametersFile: ARMTemplateParametersForFactory.json
-          additionalParameters: >
-            factoryName=prod-github-adf
-            ls_dev_adlsgen2_properties_typeProperties_url=https://prodstorageacc0908.dfs.core.windows.net
-            ls_dev_kv_properties_typeProperties_baseUrl=https://prod-kv-github.vault.azure.net
+          additionalParametersFile: infra/parameters/prod-parameters.json
